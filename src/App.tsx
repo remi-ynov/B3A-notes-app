@@ -2,13 +2,14 @@ import './App.css';
 import { collection, CollectionReference, getDocs } from 'firebase/firestore';
 import NotesList from 'src/components/note/NotesList';
 import OpenModalButton from 'src/components/OpenModalButton';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { Note } from 'src/types/NoteType';
 import { db } from 'src/config/firebase';
+import { NoteContext } from 'src/components/providers/NotesProvider';
+import { NoteActionType } from 'src/reducers/noteReducer';
 
 const App = () => {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [state, dispatch] = useContext(NoteContext);
 
   const getNotes = async () => {
     try {
@@ -19,11 +20,16 @@ const App = () => {
         ...doc.data(),
       }));
 
-      setNotes(docs);
+      dispatch({
+        type: NoteActionType.SET_NOTES,
+        payload: docs,
+      });
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: NoteActionType.SET_LOADING,
+        payload: false,
+      });
     }
   };
 
@@ -46,17 +52,13 @@ const App = () => {
     //   .finally(() => setLoading(false));
   }, []);
 
-  const addNote = (note: Note) => {
-    setNotes([...notes, note]);
-  };
-
   return (
     <div className="container mx-auto">
-      <OpenModalButton addNote={addNote} />
+      <OpenModalButton />
 
-      {loading
+      {state.isLoading
         ? <div>Chargement...</div>
-        : <NotesList notes={notes} />}
+        : <NotesList notes={state.notes} />}
     </div>
   );
 };

@@ -47,5 +47,6 @@ module.exports = {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error'],
     'react/button-has-type': 'off',
+    'react/jsx-no-constructed-context-values': 'off',
   },
 };
