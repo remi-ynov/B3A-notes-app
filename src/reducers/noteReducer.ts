@@ -4,6 +4,7 @@ import { Action } from 'src/types/ActionType';
 export enum NoteActionType {
   SET_NOTES = 'SET_NOTES',
   ADD_NOTES = 'ADD_NOTES',
+  EDIT_NOTES = 'EDIT_NOTES',
   SET_LOADING = 'SET_LOADING',
 }
 
@@ -29,6 +30,14 @@ const noteReducer = (state: NoteState, action: Action<NoteActionType>) => {
       return {
         ...state,
         notes: [action.payload, ...state.notes],
+      };
+    case NoteActionType.EDIT_NOTES:
+      return {
+        ...state,
+        notes: [
+          action.payload,
+          ...state.notes.filter((note) => note.id !== action.payload.id),
+        ],
       };
     case NoteActionType.SET_LOADING:
       return {

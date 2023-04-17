@@ -13,9 +13,9 @@ const OpenModalButton: React.FC = () => {
         text="Créer une note"
       />
 
-      <Modal show={show} setShow={setShow}>
-        <NoteForm setShow={setShow} />
-      </Modal>
+      {/* <Modal show={show} setShow={setShow}> */}
+      {/*  <NoteForm setShow={setShow} /> */}
+      {/* </Modal> */}
     </>
   );
 };

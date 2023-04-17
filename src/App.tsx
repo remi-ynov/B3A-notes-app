@@ -1,12 +1,13 @@
 import './App.css';
 import { collection, CollectionReference, getDocs } from 'firebase/firestore';
-import NotesList from 'src/components/note/NotesList';
-import OpenModalButton from 'src/components/OpenModalButton';
 import { useContext, useEffect } from 'react';
 import { Note } from 'src/types/NoteType';
 import { db } from 'src/config/firebase';
 import { NoteContext } from 'src/components/providers/NotesProvider';
 import { NoteActionType } from 'src/reducers/noteReducer';
+import Loading, { LoadingColor } from 'src/components/Loading';
+import { RouterProvider } from 'react-router-dom';
+import router from 'src/config/router';
 
 const App = () => {
   const [state, dispatch] = useContext(NoteContext);
@@ -52,13 +53,13 @@ const App = () => {
     //   .finally(() => setLoading(false));
   }, []);
 
+  if (state.isLoading) {
+    return <Loading color={LoadingColor.PURPLE} />;
+  }
+
   return (
     <div className="container mx-auto">
-      <OpenModalButton />
-
-      {state.isLoading
-        ? <div>Chargement...</div>
-        : <NotesList notes={state.notes} />}
+      <RouterProvider router={router} />
     </div>
   );
 };

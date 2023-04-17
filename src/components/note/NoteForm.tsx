@@ -1,50 +1,77 @@
 import React, { FormEvent, useContext, useState } from 'react';
 import {
-  addDoc, collection, CollectionReference, getDoc,
+  addDoc, collection, CollectionReference, getDoc, doc, updateDoc,
 } from 'firebase/firestore';
 import { db } from 'src/config/firebase';
 import { Note } from 'src/types/NoteType';
 import Button from 'src/components/Button';
 import { NoteContext } from 'src/components/providers/NotesProvider';
 import { NoteActionType } from 'src/reducers/noteReducer';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
-  setShow: (value: boolean) => void
+  note?: Note;
 }
 
-const NoteForm: React.FC<Props> = ({ setShow }) => {
+const NoteForm: React.FC<Props> = ({ note }) => {
   const [, dispatch] = useContext(NoteContext);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState(note ? note.title : '');
+  const [content, setContent] = useState(note ? note.content : '');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     try {
       setLoading(true);
-      const docRef = await addDoc<Note>(collection(db, 'notes') as CollectionReference<Note>, {
-        title,
-        content,
-        created_at: new Date(),
-      });
 
-      const doc = await getDoc(docRef);
-      const data = doc.data();
+      // MODE EDITION
+      if (note && note.id) {
+        const noteRef = doc(db, 'notes', note.id);
 
-      if (data) {
-        dispatch({
-          type: NoteActionType.ADD_NOTES,
-          payload: {
-            ...data,
-            id: docRef.id,
-          },
+        await updateDoc(noteRef, {
+          title,
+          content,
         });
+
+        const noteDoc = await getDoc(noteRef);
+        const data = noteDoc.data();
+
+        if (data) {
+          dispatch({
+            type: NoteActionType.EDIT_NOTES,
+            payload: {
+              ...data,
+              id: noteRef.id,
+            },
+          });
+        }
+      } else {
+        const docRef = await addDoc<Note>(collection(db, 'notes') as CollectionReference<Note>, {
+          title,
+          content,
+          created_at: new Date(),
+        });
+
+        const noteDoc = await getDoc(docRef);
+        const data = noteDoc.data();
+
+        if (data) {
+          dispatch({
+            type: NoteActionType.ADD_NOTES,
+            payload: {
+              ...data,
+              id: docRef.id,
+            },
+          });
+        }
       }
 
       setTitle('');
       setContent('');
-      setShow(false);
+
+      navigate('/');
     } catch (e) {
       console.error('Error adding document: ', e);
     } finally {
@@ -81,6 +108,10 @@ const NoteForm: React.FC<Props> = ({ setShow }) => {
       />
     </form>
   );
+};
+
+NoteForm.defaultProps = {
+  note: undefined,
 };
 
 export default NoteForm;
